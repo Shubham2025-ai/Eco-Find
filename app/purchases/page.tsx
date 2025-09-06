@@ -14,19 +14,19 @@ const mockPurchases = [
     id: "ORD-001",
     date: "2024-01-20",
     status: "delivered",
-    total: 57.98,
+    total: 4638.38,
     items: [
       {
         id: 1,
         name: "Bamboo Water Bottle",
-        price: 24.99,
+        price: 1999.99,
         quantity: 2,
         image: "/bamboo-water-bottle.jpg",
       },
       {
         id: 2,
         name: "Beeswax Food Wraps",
-        price: 18.5,
+        price: 1480.0,
         quantity: 1,
         image: "/beeswax-food-wraps.png",
       },
@@ -36,12 +36,12 @@ const mockPurchases = [
     id: "ORD-002",
     date: "2024-01-15",
     status: "shipped",
-    total: 89.99,
+    total: 7199.92,
     items: [
       {
         id: 3,
         name: "Hemp Backpack",
-        price: 89.99,
+        price: 7199.92,
         quantity: 1,
         image: "/hemp-backpack.png",
       },
@@ -51,19 +51,19 @@ const mockPurchases = [
     id: "ORD-003",
     date: "2024-01-10",
     status: "processing",
-    total: 77.99,
+    total: 6239.92,
     items: [
       {
         id: 4,
         name: "Solar Phone Charger",
-        price: 45.99,
+        price: 3679.92,
         quantity: 1,
         image: "/solar-phone-charger.jpg",
       },
       {
         id: 5,
         name: "Organic Cotton T-Shirt",
-        price: 32.0,
+        price: 2560.0,
         quantity: 1,
         image: "/organic-cotton-tshirt.png",
       },
@@ -73,12 +73,12 @@ const mockPurchases = [
     id: "ORD-004",
     date: "2024-01-05",
     status: "delivered",
-    total: 68.0,
+    total: 5440.0,
     items: [
       {
         id: 6,
         name: "Recycled Yoga Mat",
-        price: 68.0,
+        price: 5440.0,
         quantity: 1,
         image: "/recycled-yoga-mat.png",
       },
@@ -200,7 +200,7 @@ export default function PurchasesPage() {
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="font-semibold text-lg">${purchase.total.toFixed(2)}</p>
+                          <p className="font-semibold text-lg">₹{purchase.total.toFixed(2)}</p>
                           <div className="flex items-center gap-2">
                             {getStatusIcon(purchase.status)}
                             <Badge className={getStatusColor(purchase.status)}>{purchase.status}</Badge>
@@ -225,8 +225,8 @@ export default function PurchasesPage() {
                             <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
-                            <p className="text-sm text-muted-foreground">${item.price} each</p>
+                            <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
+                            <p className="text-sm text-muted-foreground">₹{item.price} each</p>
                           </div>
                         </div>
                       ))}

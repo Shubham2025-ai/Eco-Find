@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { Navigation } from "@/components/navigation"
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Upload, X } from "lucide-react"
+import { ArrowLeft, Upload, X, ImageIcon } from "lucide-react"
 
 const categories = [
   "Kitchen",
@@ -31,12 +31,13 @@ export default function AddProductPage() {
     price: "",
   })
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }))
     }
@@ -45,12 +46,33 @@ export default function AddProductPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors((prev) => ({ ...prev, image: "Image size must be less than 5MB" }))
+        return
+      }
+
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({ ...prev, image: "Please select a valid image file" }))
+        return
+      }
+
+      setErrors((prev) => ({ ...prev, image: "" }))
+
+      setImageFile(file)
       const reader = new FileReader()
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string)
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const removeImage = () => {
+    setSelectedImage(null)
+    setImageFile(null)
+    setErrors((prev) => ({ ...prev, image: "" }))
+    const fileInput = document.getElementById("image-upload") as HTMLInputElement
+    if (fileInput) fileInput.value = ""
   }
 
   const validateForm = () => {
@@ -78,6 +100,10 @@ export default function AddProductPage() {
       newErrors.price = "Please enter a valid price"
     }
 
+    if (!selectedImage) {
+      newErrors.image = "Product image is required"
+    }
+
     return newErrors
   }
 
@@ -89,50 +115,54 @@ export default function AddProductPage() {
 
     if (Object.keys(newErrors).length === 0) {
       setIsSubmitting(true)
+      setUploadProgress(0)
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      try {
+        for (let i = 0; i <= 100; i += 10) {
+          setUploadProgress(i)
+          await new Promise((resolve) => setTimeout(resolve, 100))
+        }
 
-      console.log("Product submitted:", {
-        ...formData,
-        image: selectedImage,
-      })
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
-      // Reset form
-      setFormData({ title: "", category: "", description: "", price: "" })
-      setSelectedImage(null)
-      setIsSubmitting(false)
+        console.log("Product submitted:", {
+          ...formData,
+          image: imageFile?.name,
+          imageSize: imageFile?.size,
+          imageType: imageFile?.type,
+        })
 
-      // In a real app, redirect to success page or listings
-      alert("Product added successfully!")
+        setFormData({ title: "", category: "", description: "", price: "" })
+        setSelectedImage(null)
+        setImageFile(null)
+        setUploadProgress(0)
+
+        const fileInput = document.getElementById("image-upload") as HTMLInputElement
+        if (fileInput) fileInput.value = ""
+
+        alert("Product added successfully!")
+      } catch (error) {
+        console.error("Upload failed:", error)
+        setErrors({ submit: "Failed to upload product. Please try again." })
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <Navigation />
+
+      <main className="container mx-auto px-4 py-8 pt-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
             <Link href="/products">
-              <Button variant="ghost" className="flex items-center gap-2">
+              <Button variant="ghost" className="flex items-center gap-2 mb-4">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Products
               </Button>
             </Link>
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">E</span>
-              </div>
-              <h1 className="text-2xl font-bold text-primary">EcoFinds</h1>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">Add New Product</h1>
             <p className="text-muted-foreground">Share your eco-friendly products with the EcoFinds community</p>
           </div>
@@ -196,11 +226,11 @@ export default function AddProductPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="price">
-                      Price (USD) <span className="text-destructive">*</span>
+                      Price (INR) <span className="text-destructive">*</span>
                     </Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-                        $
+                        ₹
                       </span>
                       <Input
                         id="price"
@@ -216,8 +246,21 @@ export default function AddProductPage() {
                     {errors.price && <p className="text-sm text-destructive">{errors.price}</p>}
                   </div>
 
+                  {errors.submit && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                      <p className="text-sm text-destructive">{errors.submit}</p>
+                    </div>
+                  )}
+
                   <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                    {isSubmitting ? "Adding Product..." : "Submit Listing"}
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : "Adding Product..."}
+                      </div>
+                    ) : (
+                      "Submit Listing"
+                    )}
                   </Button>
                 </form>
               </CardContent>
@@ -226,12 +269,14 @@ export default function AddProductPage() {
             {/* Image Upload */}
             <Card>
               <CardHeader>
-                <CardTitle>Product Image</CardTitle>
+                <CardTitle>
+                  Product Image <span className="text-destructive">*</span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {selectedImage ? (
-                    <div className="relative">
+                    <div className="relative group">
                       <img
                         src={selectedImage || "/placeholder.svg"}
                         alt="Product preview"
@@ -241,35 +286,59 @@ export default function AddProductPage() {
                         type="button"
                         variant="destructive"
                         size="sm"
-                        className="absolute top-2 right-2"
-                        onClick={() => setSelectedImage(null)}
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={removeImage}
                       >
                         <X className="h-4 w-4" />
                       </Button>
+                      {imageFile && (
+                        <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                          {imageFile.name} ({(imageFile.size / 1024 / 1024).toFixed(1)}MB)
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                      <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground mb-4">Upload a high-quality image of your product</p>
-                      <Label htmlFor="image-upload">
-                        <Button type="button" variant="outline" className="cursor-pointer bg-transparent">
-                          Choose Image
-                        </Button>
-                      </Label>
-                      <input
-                        id="image-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
+                    <div
+                      className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                        errors.image ? "border-destructive bg-destructive/5" : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <p className="text-muted-foreground mb-4 font-medium">Upload a high-quality image</p>
+                        <p className="text-sm text-muted-foreground mb-4">Drag and drop or click to browse</p>
+                        <Label htmlFor="image-upload">
+                          <Button type="button" variant="outline" className="cursor-pointer bg-transparent">
+                            <Upload className="h-4 w-4 mr-2" />
+                            Choose Image
+                          </Button>
+                        </Label>
+                        <input
+                          id="image-upload"
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                      </div>
                     </div>
                   )}
 
-                  <div className="text-sm text-muted-foreground space-y-1">
+                  {errors.image && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <X className="h-3 w-3" />
+                      {errors.image}
+                    </p>
+                  )}
+
+                  <div className="text-sm text-muted-foreground space-y-1 bg-muted/30 p-3 rounded-md">
+                    <p className="font-medium text-foreground mb-2">Image Guidelines:</p>
                     <p>• Recommended size: 800x800px or larger</p>
                     <p>• Supported formats: JPG, PNG, WebP</p>
                     <p>• Maximum file size: 5MB</p>
+                    <p>• Use clear, well-lit photos with neutral backgrounds</p>
                   </div>
                 </div>
               </CardContent>

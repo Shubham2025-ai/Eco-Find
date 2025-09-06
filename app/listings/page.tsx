@@ -7,13 +7,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Edit, Trash2, Plus, Search, Eye } from "lucide-react"
+import { Navigation } from "@/components/navigation"
 
 // Mock user listings data
 const mockListings = [
   {
     id: 1,
     name: "Bamboo Water Bottle",
-    price: 24.99,
+    price: 1999.99, // converted USD to INR
     category: "Kitchen",
     status: "active",
     views: 127,
@@ -23,7 +24,7 @@ const mockListings = [
   {
     id: 2,
     name: "Organic Cotton T-Shirt",
-    price: 32.0,
+    price: 2560.0, // converted USD to INR
     category: "Clothing",
     status: "active",
     views: 89,
@@ -33,7 +34,7 @@ const mockListings = [
   {
     id: 3,
     name: "Solar Phone Charger",
-    price: 45.99,
+    price: 3679.99, // converted USD to INR
     category: "Electronics",
     status: "draft",
     views: 0,
@@ -43,7 +44,7 @@ const mockListings = [
   {
     id: 4,
     name: "Recycled Yoga Mat",
-    price: 68.0,
+    price: 5440.0, // converted USD to INR
     category: "Fitness",
     status: "sold",
     views: 203,
@@ -84,25 +85,8 @@ export default function MyListingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">E</span>
-              </div>
-              <h1 className="text-2xl font-bold text-primary">EcoFinds</h1>
-            </Link>
-            <Link href="/products/add">
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add New Product
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Navigation Component */}
+      <Navigation />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
@@ -171,7 +155,7 @@ export default function MyListingsPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex items-center gap-6">
                           <div>
-                            <p className="text-2xl font-bold text-primary">${listing.price}</p>
+                            <p className="text-2xl font-bold text-primary">₹{listing.price}</p>
                           </div>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Eye className="h-4 w-4" />

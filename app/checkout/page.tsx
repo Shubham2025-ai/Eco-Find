@@ -14,9 +14,9 @@ import { ArrowLeft, CreditCard, Truck, Shield } from "lucide-react"
 
 // Mock order data
 const orderItems = [
-  { id: 1, name: "Bamboo Water Bottle", price: 24.99, quantity: 2 },
-  { id: 2, name: "Organic Cotton T-Shirt", price: 32.0, quantity: 1 },
-  { id: 3, name: "Solar Phone Charger", price: 45.99, quantity: 1 },
+  { id: 1, name: "Bamboo Water Bottle", price: 1999.99, quantity: 2 },
+  { id: 2, name: "Organic Cotton T-Shirt", price: 2560.0, quantity: 1 },
+  { id: 3, name: "Solar Phone Charger", price: 3679.99, quantity: 1 },
 ]
 
 export default function CheckoutPage() {
@@ -37,8 +37,8 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false)
 
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = subtotal > 50 ? 0 : 5.99
-  const tax = subtotal * 0.08
+  const shipping = subtotal > 4000 ? 0 : 199
+  const tax = subtotal * 0.18
   const total = subtotal + shipping + tax
 
   const handleInputChange = (field: string, value: string) => {
@@ -281,7 +281,7 @@ export default function CheckoutPage() {
                 </Card>
 
                 <Button type="submit" className="w-full" size="lg" disabled={isProcessing}>
-                  {isProcessing ? "Processing Payment..." : `Complete Order - $${total.toFixed(2)}`}
+                  {isProcessing ? "Processing Payment..." : `Complete Order - ₹${total.toFixed(2)}`}
                 </Button>
               </form>
             </div>
@@ -299,7 +299,7 @@ export default function CheckoutPage() {
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                       </div>
-                      <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
                     </div>
                   ))}
 
@@ -308,20 +308,20 @@ export default function CheckoutPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Subtotal</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>₹{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Shipping</span>
-                      <span>{shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}</span>
+                      <span>{shipping === 0 ? "FREE" : `₹${shipping.toFixed(2)}`}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>Tax</span>
-                      <span>${tax.toFixed(2)}</span>
+                      <span>Tax (GST)</span>
+                      <span>₹{tax.toFixed(2)}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-semibold text-lg">
                       <span>Total</span>
-                      <span className="text-primary">${total.toFixed(2)}</span>
+                      <span className="text-primary">₹{total.toFixed(2)}</span>
                     </div>
                   </div>
                 </CardContent>

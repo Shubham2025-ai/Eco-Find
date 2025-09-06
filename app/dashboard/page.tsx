@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,15 +12,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
-import { User, Package, ShoppingBag, LogOut, Edit, Save, X, Camera, Mail, Calendar, MapPin } from "lucide-react"
+import { Package, ShoppingBag, LogOut, Edit, Save, X, Camera, Mail, Calendar, MapPin, Upload } from "lucide-react"
 
 // Mock user data
 const mockUser = {
   id: 1,
   username: "eco_enthusiast",
   email: "sarah.green@email.com",
-  firstName: "Sarah",
-  lastName: "Green",
+  fullName: "Sarah Green",
   avatar: "/placeholder.svg?height=120&width=120",
   joinDate: "2024-01-15",
   location: "San Francisco, CA",
@@ -29,45 +30,56 @@ const mockUser = {
 
 // Mock stats data
 const mockStats = {
-  totalSpent: 342.87,
+  totalSpent: 28742.87,
   itemsPurchased: 12,
   itemsSold: 8,
-  carbonSaved: 45.2, // kg of CO2
 }
 
 export default function DashboardPage() {
   const [user, setUser] = useState(mockUser)
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    location: user.location,
+    username: user.username,
   })
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   const handleEditToggle = () => {
     if (isEditing) {
       // Reset form if canceling
       setEditForm({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        location: user.location,
+        username: user.username,
       })
+      setSelectedImage(null)
+      setPreviewUrl(null)
     }
     setIsEditing(!isEditing)
   }
 
   const handleSave = () => {
-    // Update user data
     setUser((prev) => ({
       ...prev,
-      firstName: editForm.firstName,
-      lastName: editForm.lastName,
-      email: editForm.email,
-      location: editForm.location,
+      username: editForm.username,
     }))
+
+    // Handle image upload (you'll implement database logic locally)
+    if (selectedImage) {
+      console.log("Image to upload:", selectedImage)
+      // Here you would upload to your local database
+    }
+
     setIsEditing(false)
+    setSelectedImage(null)
+    setPreviewUrl(null)
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedImage(file)
+      const url = URL.createObjectURL(file)
+      setPreviewUrl(url)
+    }
   }
 
   const handleLogout = () => {
@@ -91,60 +103,76 @@ export default function DashboardPage() {
                 {/* Avatar */}
                 <div className="relative">
                   <Avatar className="w-24 h-24">
-                    <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.username} />
+                    <AvatarImage src={previewUrl || user.avatar || "/placeholder.svg"} alt={user.username} />
                     <AvatarFallback className="text-2xl">
-                      {user.firstName[0]}
-                      {user.lastName[0]}
+                      {user.fullName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0 bg-transparent"
-                  >
-                    <Camera className="h-3 w-3" />
-                  </Button>
+                  {isEditing && (
+                    <div className="absolute -bottom-2 -right-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        id="avatar-upload"
+                      />
+                      <label htmlFor="avatar-upload">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full w-8 h-8 p-0 bg-background cursor-pointer"
+                          asChild
+                        >
+                          <span>
+                            <Camera className="h-3 w-3" />
+                          </span>
+                        </Button>
+                      </label>
+                    </div>
+                  )}
                 </div>
 
                 {/* User Info */}
                 <div className="flex-1 text-center sm:text-left">
                   {isEditing ? (
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="firstName">First Name</Label>
-                          <Input
-                            id="firstName"
-                            value={editForm.firstName}
-                            onChange={(e) => setEditForm((prev) => ({ ...prev, firstName: e.target.value }))}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="lastName">Last Name</Label>
-                          <Input
-                            id="lastName"
-                            value={editForm.lastName}
-                            onChange={(e) => setEditForm((prev) => ({ ...prev, lastName: e.target.value }))}
-                          />
-                        </div>
-                      </div>
                       <div>
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="username">Username</Label>
                         <Input
-                          id="email"
-                          type="email"
-                          value={editForm.email}
-                          onChange={(e) => setEditForm((prev) => ({ ...prev, email: e.target.value }))}
+                          id="username"
+                          value={editForm.username}
+                          onChange={(e) => setEditForm((prev) => ({ ...prev, username: e.target.value }))}
+                          placeholder="Enter username"
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          value={editForm.location}
-                          onChange={(e) => setEditForm((prev) => ({ ...prev, location: e.target.value }))}
-                        />
+
+                      {/* Read-only fields */}
+                      <div className="space-y-3">
+                        <div>
+                          <Label>Full Name</Label>
+                          <Input value={user.fullName} disabled className="bg-muted" />
+                        </div>
+                        <div>
+                          <Label>Email</Label>
+                          <Input value={user.email} disabled className="bg-muted" />
+                        </div>
+                        <div>
+                          <Label>Location</Label>
+                          <Input value={user.location} disabled className="bg-muted" />
+                        </div>
                       </div>
+
+                      {selectedImage && (
+                        <div className="text-sm text-muted-foreground">
+                          <Upload className="h-4 w-4 inline mr-1" />
+                          New profile photo selected: {selectedImage.name}
+                        </div>
+                      )}
+
                       <div className="flex gap-2">
                         <Button onClick={handleSave} size="sm">
                           <Save className="h-4 w-4 mr-1" />
@@ -159,9 +187,7 @@ export default function DashboardPage() {
                   ) : (
                     <div className="space-y-3">
                       <div>
-                        <h2 className="text-2xl font-bold text-foreground">
-                          {user.firstName} {user.lastName}
-                        </h2>
+                        <h2 className="text-2xl font-bold text-foreground">{user.fullName}</h2>
                         <p className="text-muted-foreground">@{user.username}</p>
                       </div>
 
@@ -192,10 +218,10 @@ export default function DashboardPage() {
           </Card>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary">${mockStats.totalSpent}</div>
+                <div className="text-2xl font-bold text-primary">₹{mockStats.totalSpent}</div>
                 <div className="text-sm text-muted-foreground">Total Spent</div>
               </CardContent>
             </Card>
@@ -211,16 +237,10 @@ export default function DashboardPage() {
                 <div className="text-sm text-muted-foreground">Items Sold</div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-green-600">{mockStats.carbonSaved}kg</div>
-                <div className="text-sm text-muted-foreground">CO₂ Saved</div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Quick Actions */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <Link href="/listings">
                 <CardContent className="p-6 text-center">
@@ -241,17 +261,6 @@ export default function DashboardPage() {
                   <Badge variant="secondary">{user.totalPurchases} orders</Badge>
                 </CardContent>
               </Link>
-            </Card>
-
-            <Card className="hover:shadow-md transition-shadow cursor-pointer md:col-span-2 lg:col-span-1">
-              <CardContent className="p-6 text-center">
-                <User className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Account Settings</h3>
-                <p className="text-muted-foreground text-sm mb-4">Update preferences and security settings</p>
-                <Button variant="outline" size="sm">
-                  Manage Account
-                </Button>
-              </CardContent>
             </Card>
           </div>
 

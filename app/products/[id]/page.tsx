@@ -11,7 +11,7 @@ import { ArrowLeft, ShoppingCart, Heart } from "lucide-react"
 const mockProduct = {
   id: 1,
   name: "Bamboo Water Bottle",
-  price: 24.99,
+  price: 1999.99, // converted USD to INR
   category: "Kitchen",
   description:
     "Stay hydrated sustainably with our premium bamboo water bottle. Made from 100% natural bamboo fiber, this eco-friendly bottle is completely biodegradable and features a leak-proof design. Perfect for daily use, hiking, or gym sessions. The natural bamboo material keeps your drinks at the perfect temperature while reducing plastic waste.",
@@ -81,7 +81,7 @@ export default function ProductDetailPage() {
               </Badge>
               <h1 className="text-3xl font-bold text-foreground mb-2 text-balance">{mockProduct.name}</h1>
               <div className="flex items-center gap-4 mb-4">
-                <p className="text-3xl font-bold text-primary">${mockProduct.price}</p>
+                <p className="text-3xl font-bold text-primary">₹{mockProduct.price}</p>
                 <div className="flex items-center gap-2">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
